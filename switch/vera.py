@@ -26,7 +26,7 @@ def get_devices(hass, config):
             try:
                 device_data = json.loads(device_data_str)
             except Exception as json_ex:
-                _LOGGER.error('Vera lights error parsing device info, should be in the format [{"id" : 12, "name": "Lounge Light"}]: %s', json_ex)
+                _LOGGER.error('Vera switch error parsing device info, should be in the format [{"id" : 12, "name": "Lounge Light"}]: %s', json_ex)
 
         vera_controller = veraApi.VeraController(base_url)
         devices = vera_controller.get_devices('Switch')

@@ -26,3 +26,11 @@ The `device_data` parameter is optional. The `name` parameter is optional and if
 	platform=vera
 	device_data=[{"id" : 12, "name": "Lounge Light"}]
 	vera_controller_url=http://<your vera ip>:3480/
+
+## Sensors
+The `device_data` parameter is optional. The `name` parameter is optional and if present will override the name specified in the Vera controller in the home-assistant UI.
+
+	[sensor]
+	platform=vera
+	device_data=[{"id" : 4, "name": "Lounge Temp"}, {"id" : 3, "name": "Lounge Motion"}, {"id" : 5, "name": "Light Level"}]
+	vera_controller_url=http://<your vera ip>:3480/
