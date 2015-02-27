@@ -5,7 +5,7 @@ This is a custom component designed to interface between [Home Assistant](https:
 
 ## Installation
 
-Clone this repository to you local machine and copy the `light', `switch` and `external` directories into the `home-assistant/config/custom-components` directory.
+Clone this repository to you local machine and copy the `light`, `switch` and `external` directories into the `home-assistant/config/custom-components` directory.
 
 ## Configuation
 
