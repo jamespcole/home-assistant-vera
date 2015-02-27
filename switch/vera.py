@@ -29,7 +29,7 @@ def get_devices(hass, config):
                 _LOGGER.error('Vera switch error parsing device info, should be in the format [{"id" : 12, "name": "Lounge Light"}]: %s', json_ex)
 
         vera_controller = veraApi.VeraController(base_url)
-        devices = vera_controller.get_devices('Switch')
+        devices = vera_controller.get_devices(['Switch', 'Armable Sensor'])
 
         vera_switches = []
         for device in devices:

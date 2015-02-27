@@ -59,6 +59,15 @@ class VeraController(object):
 				self.devices.append(VeraSwitch(item, self))
 			elif item.get('deviceInfo') and item.get('deviceInfo').get('categoryName') == 'Temperature Sensor':
 				self.devices.append(VeraSensor(item, self))
+			elif item.get('deviceInfo') and item.get('deviceInfo').get('categoryName') == 'Sensor':
+				sensor = VeraSensor(item, self)
+				self.devices.append(sensor)
+				if sensor.is_armable:
+					armable = VeraArmableDevice(item, self)
+					armable.category = 'Armable Sensor'
+					self.devices.append(armable)				
+			elif item.get('deviceInfo') and item.get('deviceInfo').get('categoryName') == 'Light Sensor':
+				self.devices.append(VeraSensor(item, self))
 			else:
 				self.devices.append(VeraDevice(item, self))
 
@@ -79,7 +88,7 @@ class VeraController(object):
 
 
 
-class VeraDevice(object):
+class VeraDevice(object):	
 
 	def __init__(self, aJSonObj, veraController):
 		self.jsonState = aJSonObj
@@ -125,6 +134,12 @@ class VeraDevice(object):
 				return item.get('value')
 		return None
 
+	@property
+	def is_armable(self):
+		if self.get_value('Armed') is not None:
+			return True
+		else:
+			return False
 
 class VeraSwitch(VeraDevice):
 
@@ -140,6 +155,25 @@ class VeraSwitch(VeraDevice):
 	def is_switched_on(self):
 		self.refresh_value('Status')
 		val = self.get_value('Status')
+		if val == '1':
+			return True
+		else:
+			return False
+
+class VeraArmableDevice(VeraSwitch):
+
+	def __init__(self, aJSonObj, veraController):
+		super().__init__(aJSonObj, veraController)
+
+	def switch_on(self):
+		self.set_value('Armed', 1)
+
+	def switch_off(self):
+		self.set_value('Armed', 0)
+
+	def is_switched_on(self):
+		self.refresh_value('Armed')
+		val = self.get_value('Armed')
 		if val == '1':
 			return True
 		else:

@@ -19,7 +19,7 @@ def get_devices(hass, config):
         base_url = config.get('vera_controller_url')
         if not base_url:
             _LOGGER.error("The required parameter 'vera_controller_url' was not found in config")
-            return False
+            #return False
 
         device_data_str = config.get('device_data')        
         device_data = None
