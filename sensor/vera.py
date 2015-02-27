@@ -32,8 +32,6 @@ def get_devices(hass, config):
         vera_controller = veraApi.VeraController(base_url)
         devices = vera_controller.get_devices(['Temperature Sensor', 'Light Sensor', 'Sensor'])
 
-        print(devices)
-
         vera_sensors = []
         for device in devices:
             vera_sensors.append(VeraSensor(device, get_extra_device_data(device_data, device.deviceId)))
@@ -110,7 +108,7 @@ class VeraSensor(Device):
             tripTimeStr = time.strftime("%D %H:%M", time.localtime(int(lastTripped)))
 
             #self.current_value =  tripped + ' at ' + tripTimeStr + 'Battery(' + battery + ')' 
-            self.current_value =  'Tripped' if tripped == '1' else 'Not Tripped'
+            self.current_value = 'Tripped' if tripped == '1' else 'Not Tripped'
         else:
             self.current_value = 'Unknown'
         
