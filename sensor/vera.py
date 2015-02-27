@@ -89,9 +89,18 @@ class VeraSensor(Device):
 
     @property
     def state_attributes(self):
-        """ Returns optional state attributes. """
-        attr = {}
+        attr = super().state_attributes
+
+        if self.vera_device.category == "Sensor":
+            attr['Battery'] = self.vera_device.refresh_value('BatteryLevel') + '%'
+            armed = self.vera_device.refresh_value('Armed')
+            attr['Armed'] = 'True' if armed == '1' else 'False'
+            lastTripped = self.vera_device.refresh_value('LastTrip')
+            tripTimeStr = time.strftime("%Y-%m-%d %H:%M", time.localtime(int(lastTripped)))
+            attr['Last Tripped'] = tripTimeStr
+
         return attr
+
 
     def update(self):
         if self.vera_device.category == "Temperature Sensor":
