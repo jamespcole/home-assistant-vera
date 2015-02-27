@@ -7,11 +7,13 @@ import json
 from homeassistant.helpers import ToggleDevice
 import config.custom_components.external.vera as veraApi
 
-_LOGGER = logging.getLogger('Vera_Light')
+_LOGGER = logging.getLogger('Vera_Switch')
 
+vera_controller = None
+vera_switches = []
 
-def setup_platform(hass, config, add_devices_callback, discovery_info=None):
-    """ Find and return Vera lights. """
+def get_devices(hass, config):
+    """ Find and return Vera switches. """
     try:
         base_url = config.get('vera_controller_url')
         if not base_url:
@@ -26,31 +28,18 @@ def setup_platform(hass, config, add_devices_callback, discovery_info=None):
             except Exception as json_ex:
                 _LOGGER.error('Vera lights error parsing device info, should be in the format [{"id" : 12, "name": "Lounge Light"}]: %s', json_ex)
 
-        controller = veraApi.VeraController(base_url)
-        devices = controller.get_devices('Switch')
+        vera_controller = veraApi.VeraController(base_url)
+        devices = vera_controller.get_devices('Switch')
 
-        lights = []
+        vera_switches = []
         for device in devices:
-            if is_switch_a_light(device_data, device.deviceId):
-                lights.append(VeraLight(device, get_extra_device_data(device_data, device.deviceId)))
+            vera_switches.append(VeraSwitch(device, get_extra_device_data(device_data, device.deviceId)))
 
-        add_devices_callback(lights)
     except Exception as inst:
-        _LOGGER.error("Could not find Vera lights: %s", inst)
+        _LOGGER.error("Could not find Vera switches: %s", inst)
         return False
 
-# If you have z-wave switches that control lights you can configure them
-# to be treated as lights using the "device_data" parameter in the config.
-# If "device_data" is not set then all switches are treated as lights
-def is_switch_a_light(device_data, device_id):
-    if not device_data:
-        return True
-
-    for item in device_data:
-        if item.get('id') == device_id:
-            return True
-
-    return False
+    return vera_switches
 
 def get_extra_device_data(device_data, device_id):
     if not device_data:
@@ -59,12 +48,15 @@ def get_extra_device_data(device_data, device_id):
     for item in device_data:
         if item.get('id') == device_id:
             return item
-
     return None
 
 
-class VeraLight(ToggleDevice):
-    """ Represents a Vera light """
+def get_switches():
+    return vera_switches
+
+
+class VeraSwitch(ToggleDevice):
+    """ Represents a Vera Switch """
     is_on_status = False
     #for debouncing status check after command is sent
     last_command_send = 0
@@ -76,13 +68,13 @@ class VeraLight(ToggleDevice):
 
     @property
     def unique_id(self):
-        """ Returns the id of this light """
+        """ Returns the id of this switch """
         return "{}.{}".format(
-            self.__class__, self.info.get('uniqueid', 'vera-' + self.vera_device.deviceId))
+            self.__class__, self.info.get('uniqueid', 'vera-switch-' + self.vera_device.deviceId))
 
     @property
     def name(self):
-        """ Get the mame of the light. """
+        """ Get the mame of the switch. """
         if self.extra_data and self.extra_data.get('name'):
             return self.extra_data.get('name')
         return self.vera_device.name
@@ -123,7 +115,7 @@ class VeraLight(ToggleDevice):
         return self.is_on_status
 
     def update(self):
-        # We need to debounce the status call after turning light on or off 
+        # We need to debounce the status call after turning switch on or off 
         # because the vera has some lag in updating the device status
         if (self.last_command_send + 5) < time.time():
             self.is_on_status = self.vera_device.is_switched_on()
