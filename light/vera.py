@@ -89,14 +89,24 @@ class VeraLight(ToggleDevice):
 
     @property
     def state_attributes(self):
-        """ Returns optional state attributes. """
-        attr = {
-            ATTR_FRIENDLY_NAME: self.name
-        }
+        attr = super().state_attributes
 
-        if self.is_on:
-            attr[ATTR_BRIGHTNESS] = self.info['state']['bri']
-            attr[ATTR_XY_COLOR] = self.info['state']['xy']
+        if self.vera_device.has_battery:
+            attr['Battery'] = self.vera_device.battery_level + '%'
+
+        if self.vera_device.is_armable:
+            armed = self.vera_device.refresh_value('Armed')
+            attr['Armed'] = 'True' if armed == '1' else 'False'
+
+        if self.vera_device.is_trippable:
+            lastTripped = self.vera_device.refresh_value('LastTrip')
+            tripTimeStr = time.strftime("%Y-%m-%d %H:%M", time.localtime(int(lastTripped)))
+            attr['Last Tripped'] = tripTimeStr
+
+            tripped = self.vera_device.refresh_value('Tripped')
+            attr['Tripped'] = 'True' if tripped == '1' else 'False'
+
+        attr['Vera Device Id'] = self.vera_device.vera_device_id
 
         return attr
 
@@ -109,12 +119,6 @@ class VeraLight(ToggleDevice):
         self.last_command_send = time.time()
         self.vera_device.switch_off()
         self.is_on_status = False
-
-    @property
-    def state_attributes(self):
-        attr = super().state_attributes
-
-        return attr
 
     @property
     def is_on(self):

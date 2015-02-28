@@ -141,6 +141,29 @@ class VeraDevice(object):
 		else:
 			return False
 
+	@property
+	def is_trippable(self):
+		if self.get_value('Tripped') is not None:
+			return True
+		else:
+			return False
+
+	@property
+	def has_battery(self):
+		if self.get_value('BatteryLevel') is not None:
+			return True
+		else:
+			return False
+
+	@property
+	def battery_level(self):
+		return self.refresh_value('BatteryLevel')
+
+	@property
+	def vera_device_id(self):
+		return self.deviceId
+
+
 class VeraSwitch(VeraDevice):
 
 	def __init__(self, aJSonObj, veraController):

@@ -91,13 +91,22 @@ class VeraSensor(Device):
     def state_attributes(self):
         attr = super().state_attributes
 
-        if self.vera_device.category == "Sensor":
-            attr['Battery'] = self.vera_device.refresh_value('BatteryLevel') + '%'
+        if self.vera_device.has_battery:
+            attr['Battery'] = self.vera_device.battery_level + '%'
+
+        if self.vera_device.is_armable:
             armed = self.vera_device.refresh_value('Armed')
             attr['Armed'] = 'True' if armed == '1' else 'False'
+
+        if self.vera_device.is_trippable:
             lastTripped = self.vera_device.refresh_value('LastTrip')
             tripTimeStr = time.strftime("%Y-%m-%d %H:%M", time.localtime(int(lastTripped)))
             attr['Last Tripped'] = tripTimeStr
+
+            tripped = self.vera_device.refresh_value('Tripped')
+            attr['Tripped'] = 'True' if tripped == '1' else 'False'
+
+        attr['Vera Device Id'] = self.vera_device.vera_device_id
 
         return attr
 
@@ -105,18 +114,12 @@ class VeraSensor(Device):
     def update(self):
         if self.vera_device.category == "Temperature Sensor":
             self.vera_device.refresh_value('CurrentTemperature')
-            self.current_value = self.vera_device.get_value('CurrentTemperature') + self.vera_device.veraController.temperature_units
+            self.current_value = self.vera_device.get_value('CurrentTemperature') + '°' + self.vera_device.veraController.temperature_units
         elif self.vera_device.category == "Light Sensor":
             self.vera_device.refresh_value('CurrentLevel')
             self.current_value = self.vera_device.get_value('CurrentLevel')
         elif self.vera_device.category == "Sensor":
             tripped = self.vera_device.refresh_value('Tripped')
-            battery = self.vera_device.refresh_value('BatteryLevel')
-            armed = self.vera_device.refresh_value('Armed')
-            lastTripped = self.vera_device.refresh_value('LastTrip')
-            tripTimeStr = time.strftime("%D %H:%M", time.localtime(int(lastTripped)))
-
-            #self.current_value =  tripped + ' at ' + tripTimeStr + 'Battery(' + battery + ')' 
             self.current_value = 'Tripped' if tripped == '1' else 'Not Tripped'
         else:
             self.current_value = 'Unknown'
